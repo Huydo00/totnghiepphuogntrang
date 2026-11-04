@@ -251,17 +251,18 @@
         Xin vui lòng xác nhận sự có mặt của bạn để mình chuẩn bị đón tiếp một cách chu đáo nhất.<br>
         Xin cảm ơn!</p>
 
-      <form id="rsvpForm" novalidate>
-        <input class="f-in rv" style="--d:1" type="text" id="fName" placeholder="Tên của bạn">
-        <textarea class="f-ta rv" style="--d:2" id="fWish" placeholder="Gửi lời chúc đến tân cử nhân"></textarea>
-        <select class="f-sel rv" style="--d:3" id="fCome">
+      <form id="rsvpForm" action="https://docs.google.com/forms/d/e/1FAIpQLSd-EjBVuIksVVluTmYi6a1kBKRjlsbKbW8EXEemjoOiveCU-g/formResponse" method="POST" target="rsvpGoogleFrame" novalidate>
+        <input class="f-in rv" style="--d:1" type="text" id="fName" name="name" placeholder="Tên của bạn">
+        <input class="f-in rv" style="--d:2" type="email" id="fEmail" name="emailAddress" placeholder="Email của bạn">
+        <textarea class="f-ta rv" style="--d:3" id="fWish" name="wish" placeholder="Gửi lời chúc đến tân cử nhân"></textarea>
+        <select class="f-sel rv" style="--d:4" id="fCome" name="attendance_code">
           <option value="">Bạn sẽ đến chứ?</option>
           <option value="yes">Có, mình sẽ đến ✨</option>
-          <option value="try">Sẽ cố gắng sắp xếp</option>
           <option value="no">Rất tiếc, mình bận mất rồi</option>
         </select>
-        <button class="f-btn rv" style="--d:4" type="submit" id="fBtn">XÁC NHẬN</button>
+        <button class="f-btn rv" style="--d:5" type="submit" id="fBtn">XÁC NHẬN</button>
       </form>
+      <iframe id="rsvpGoogleFrame" name="rsvpGoogleFrame" hidden title="Google Form RSVP"></iframe>
       <div class="f-done" id="fDone">Cảm ơn bạn rất nhiều! 💐<br>Hẹn gặp bạn trong ngày vui của mình nhé!</div>
 
       <svg class="orn7 rv" style="--d:5" viewBox="0 0 260 96" fill="none" stroke="#c14a6c"

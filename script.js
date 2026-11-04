@@ -187,7 +187,7 @@ endbg.addEventListener('error',function(){endbg.style.display='none';});
 
 
 var rsvpForm=document.getElementById('rsvpForm'),fName=document.getElementById('fName'),
-    fWish=document.getElementById('fWish'),fCome=document.getElementById('fCome'),
+    fEmail=document.getElementById('fEmail'),fWish=document.getElementById('fWish'),fCome=document.getElementById('fCome'),
     fBtn=document.getElementById('fBtn'),fDone=document.getElementById('fDone');
 fCome.addEventListener('change',function(){
   if(fCome.value)fCome.classList.add('set');
@@ -199,11 +199,43 @@ rsvpForm.addEventListener('submit',function(e){
     setTimeout(function(){fName.classList.remove('f-err');},1800);
     return;
   }
+  if(!fEmail.validity.valid || !fEmail.value.trim()){
+    fEmail.classList.add('f-err');fEmail.focus();
+    setTimeout(function(){fEmail.classList.remove('f-err');},1800);
+    return;
+  }
+  if(!fCome.value){
+    fCome.classList.add('f-err');
+    fCome.focus();
+    setTimeout(function(){fCome.classList.remove('f-err');},1800);
+    return;
+  }
   try{
     var list=JSON.parse(localStorage.getItem('rsvp_phuongtrang')||'[]');
     list.push({name:fName.value.trim(),wish:fWish.value.trim(),come:fCome.value||'?',t:Date.now()});
     localStorage.setItem('rsvp_phuongtrang',JSON.stringify(list));
   }catch(err){}
+  var attendance={
+    yes:'Có, mình sẽ đến',
+    no:'Rất tiếc, mình bận mất rồi'
+  };
+  var googleForm=document.createElement('form');
+  googleForm.method='POST';
+  googleForm.action='https://docs.google.com/forms/d/e/1FAIpQLSd-EjBVuIksVVluTmYi6a1kBKRjlsbKbW8EXEemjoOiveCU-g/formResponse';
+  googleForm.target='rsvpGoogleFrame';
+  function addField(name,value){
+    var input=document.createElement('input');
+    input.type='hidden';input.name=name;input.value=value;
+    googleForm.appendChild(input);
+  }
+  addField('entry.1550607041',fName.value.trim());
+  addField('emailAddress',fEmail.value.trim());
+  addField('entry.96797833',fWish.value.trim() || '(Không có lời chúc)');
+  addField('entry.284726174',attendance[fCome.value]);
+  document.body.appendChild(googleForm);
+  googleForm.submit();
+  googleForm.remove();
+
   rsvpForm.style.display='none';
   fDone.style.display='block';
   fit();
