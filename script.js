@@ -296,25 +296,62 @@ try{
   }else{revealAll();}
 }catch(e){revealAll();}
 
-/* ===== Nhạc nền: phát file music.mp3 ===== */
+/* ===== Nhạc nền TỰ ĐỘNG PHÁT: music.mp3 ===== */
+/* Trình duyệt có thể chặn autoplay có tiếng: thử phát có tiếng → phát câm
+   → nếu vẫn bị chặn thì phát ở cú chạm/click đầu tiên. Nút ♪ để bật/tắt. */
 var musicBtn=document.getElementById('music'),
     bgm=document.getElementById('bgm');
-bgm.volume=0.85; /* âm lượng 0.0 → 1.0, chỉnh tại đây */
+bgm.volume=0.85;   /* âm lượng 0.0 → 1.0 */
+bgm.loop=true;
+var musicOn=true;  /* ý định của khách: muốn nghe nhạc */
+function musicIcon(on){
+  musicBtn.classList[on?'add':'remove']('on');
+  musicBtn.textContent=on?'♫':'♪';
+}
+function tryMusic(withSound){
+  if(withSound)bgm.muted=false;
+  try{
+    var p=bgm.play();
+    if(p&&p.then){
+      p.then(function(){musicIcon(true);},function(){
+        if(!bgm.muted){
+          bgm.muted=true;              /* bị chặn → thử phát câm */
+          var q=bgm.play();
+          if(q&&q.then){q.then(function(){musicIcon(true);},function(){musicIcon(false);});}
+          else{musicIcon(!bgm.paused);}
+        }else{musicIcon(false);}
+      });
+    }else{musicIcon(!bgm.paused);}
+  }catch(e){musicIcon(false);}
+}
+function unlockMusic(e){
+  if(e&&e.target&&(e.target===musicBtn||musicBtn.contains(e.target)))return;
+  if(musicOn&&bgm.muted){bgm.muted=false;}   /* mở tiếng */
+  if(musicOn&&bgm.paused){tryMusic(false);}  /* bắt đầu phát */
+  else if(musicOn){musicIcon(true);}
+}
+/* Cú chạm/click/phím đầu tiên trên trang: mở tiếng / bắt đầu phát */
+document.addEventListener('touchstart',unlockMusic,{passive:true});
+document.addEventListener('touchend',unlockMusic,{passive:true});
+document.addEventListener('click',unlockMusic);
+document.addEventListener('keydown',unlockMusic);
+/* Tự phát ngay khi tải trang */
+tryMusic(true);
+bgm.addEventListener('canplay',function(){
+  if(musicOn&&bgm.paused)tryMusic(true);
+});
+/* Nút ♪: bật/tắt thủ công */
 musicBtn.addEventListener('click',function(){
-  if(!bgm.paused){
+  if(!bgm.paused||bgm.muted){
+    musicOn=false;
     bgm.pause();
-    musicBtn.classList.remove('on');
-    musicBtn.textContent='♪';
+    bgm.muted=false;
+    musicIcon(false);
   }else{
-    try{
-      var p=bgm.play();
-      if(p&&p.catch)p.catch(function(){});
-    }catch(e){}
-    musicBtn.classList.add('on');
-    musicBtn.textContent='♫';
+    musicOn=true;
+    tryMusic(true);
   }
 });
 bgm.addEventListener('ended',function(){ /* phòng khi bỏ thuộc tính loop */
-  musicBtn.classList.remove('on');
-  musicBtn.textContent='♪';
+  musicIcon(false);
 });
