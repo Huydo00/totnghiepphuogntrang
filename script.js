@@ -296,48 +296,25 @@ try{
   }else{revealAll();}
 }catch(e){revealAll();}
 
-/* ===== Nhạc hộp nhẹ (Canon) — WebAudio ===== */
-var ac=null,master=null,timer=null,nextT=0;
-var STEP=0.42,LOOP=32*STEP;
-var F={'D3':146.83,'F#3':185.00,'G3':196.00,'A3':220.00,'B3':246.94,'C#4':277.18,
-       'D4':293.66,'E4':329.63,'F#4':369.99,'G4':392.00,'A4':440.00,'B4':493.88,'D5':587.33};
-var CH=[['D4','F#4','A4','D5'],['A3','C#4','E4','A4'],['B3','D4','F#4','B4'],['F#3','A3','C#4','A4'],
-        ['G3','B3','D4','G4'],['D4','F#4','A4','D5'],['G3','B3','D4','G4'],['A3','C#4','E4','A4']];
-var ROOT=['D3','A3','B3','F#3','G3','D3','G3','A3'];
-function pluck(f,t,d,v){
-  var o=ac.createOscillator(),g=ac.createGain();
-  o.type='sine';o.frequency.value=f;
-  g.gain.setValueAtTime(0.0001,t);
-  g.gain.exponentialRampToValueAtTime(v,t+0.02);
-  g.gain.exponentialRampToValueAtTime(0.0001,t+d);
-  o.connect(g);g.connect(master);o.start(t);o.stop(t+d+0.1);
-  var o2=ac.createOscillator(),g2=ac.createGain();
-  o2.type='triangle';o2.frequency.value=f*2;
-  g2.gain.setValueAtTime(0.0001,t);
-  g2.gain.exponentialRampToValueAtTime(v*0.22,t+0.01);
-  g2.gain.exponentialRampToValueAtTime(0.0001,t+d*0.45);
-  o2.connect(g2);g2.connect(master);o2.start(t);o2.stop(t+d);
-}
-function scheduleLoop(t0){
-  for(var i=0;i<8;i++){
-    var t=t0+i*4*STEP;
-    pluck(F[ROOT[i]],t,2.8,0.10);
-    for(var j=0;j<4;j++)pluck(F[CH[i][j]],t+j*STEP,1.5,0.13);
-  }
-}
-function startMusic(){
-  ac=new (window.AudioContext||window.webkitAudioContext)();
-  master=ac.createGain();master.gain.value=0.55;master.connect(ac.destination);
-  var dl=ac.createDelay(1);dl.delayTime.value=0.29;
-  var fb=ac.createGain();fb.gain.value=0.25;
-  var wet=ac.createGain();wet.gain.value=0.22;
-  master.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(ac.destination);
-  nextT=ac.currentTime+0.2;scheduleLoop(nextT);nextT+=LOOP;
-  timer=setInterval(function(){if(ac.currentTime>nextT-1.2){scheduleLoop(nextT);nextT+=LOOP;}},700);
-}
-function stopMusic(){clearInterval(timer);timer=null;if(ac){try{ac.close();}catch(e){}ac=null;}}
-var musicBtn=document.getElementById('music');
+/* ===== Nhạc nền: phát file music.mp3 ===== */
+var musicBtn=document.getElementById('music'),
+    bgm=document.getElementById('bgm');
+bgm.volume=0.85; /* âm lượng 0.0 → 1.0, chỉnh tại đây */
 musicBtn.addEventListener('click',function(){
-  if(timer){stopMusic();musicBtn.classList.remove('on');musicBtn.textContent='♪';}
-  else{try{startMusic();}catch(e){}musicBtn.classList.add('on');musicBtn.textContent='♫';}
+  if(!bgm.paused){
+    bgm.pause();
+    musicBtn.classList.remove('on');
+    musicBtn.textContent='♪';
+  }else{
+    try{
+      var p=bgm.play();
+      if(p&&p.catch)p.catch(function(){});
+    }catch(e){}
+    musicBtn.classList.add('on');
+    musicBtn.textContent='♫';
+  }
+});
+bgm.addEventListener('ended',function(){ /* phòng khi bỏ thuộc tính loop */
+  musicBtn.classList.remove('on');
+  musicBtn.textContent='♪';
 });
